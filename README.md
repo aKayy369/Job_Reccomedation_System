@@ -354,6 +354,7 @@ sudo systemctl start crond && sudo systemctl enable crond
 
 ---
 
+
 ## Project File Structure
 
 ```
@@ -387,3 +388,32 @@ mlops_project/
 - Bian, S., et al. (2020). Learning to match jobs with resumes from sparse interaction data. Proceedings of the Web Conference.
 - Alonso, R., et al. (2025). Job matching and skill identification using deep learning. Expert Systems with Applications.
 - Baylor, D., et al. (2017). TFX: A TensorFlow-based production-scale machine learning platform. KDD.
+
+## demo
+
+Architecture Diagram
+
+<img src="pic1.jpeg" width="900"/>
+
+---
+ AWS S3 Bucket Structure
+
+<img src="pic2.jpeg" width="900"/>
+
+---
+
+DynamoDB Job Features Table
+
+<img src="pic3.jpeg" width="900"/>
+
+---
+
+ CloudWatch Monitoring & Alarms
+
+<img src="pic4.jpeg" width="900"/>
+
+---
+
+Resume Upload & Job Recommendation Dashboard
+
+<img src="pic5.jpeg" width="900"/>
