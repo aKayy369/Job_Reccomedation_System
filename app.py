@@ -2,7 +2,7 @@
 app.py — Real-Time Career Intelligence Platform
 FastAPI local server with dashboard UI
 
-Run:
+Then Run:
     pip install fastapi uvicorn python-multipart pdfminer.six lightgbm scikit-learn pandas
     python app.py
 """
