@@ -396,24 +396,23 @@ Architecture Diagram
 <img src="pic1.jpeg" width="900"/>
 
 ---
- AWS S3 Bucket Structure
+ APP DEMO :
 
 <img src="pic2.jpeg" width="900"/>
 
 ---
 
-DynamoDB Job Features Table
 
 <img src="pic3.jpeg" width="900"/>
 
 ---
 
- CloudWatch Monitoring & Alarms
+ 
 
 <img src="pic4.jpeg" width="900"/>
 
 ---
 
-Resume Upload & Job Recommendation Dashboard
+Pipeline
 
 <img src="pic5.jpeg" width="900"/>
