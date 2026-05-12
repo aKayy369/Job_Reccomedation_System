@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# Data files (important for MLOps)
+data/
+*.csv
+
+# Models (DO NOT push large models)
+models/*.pkl
+models/*.h5
+models/*.pt
+
+# Metadata (optional)
+*.json
+
+# Build / packaging
+dist/
+build/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Ignore PDFs (optional)
+*.pdf

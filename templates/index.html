@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Intelligence Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --bg:       #0a0a0f;
+    --surface:  #12121a;
+    --card:     #1a1a26;
+    --border:   #2a2a3a;
+    --accent:   #7c6af7;
+    --accent2:  #4ecdc4;
+    --accent3:  #ff6b6b;
+    --text:     #e8e8f0;
+    --muted:    #6b6b8a;
+    --success:  #4ecdc4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .status-pill .dot {
+    width: 6px; height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Upload zone */
+  .upload-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .upload-zone {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(124,106,247,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.05);
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .upload-zone h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-zone p {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 0.7rem 1.8rem;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .btn:hover { background: #6a59e0; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  #fileInput { display: none; }
+
+  /* Info cards */
+  .info-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .info-card .icon {
+    font-size: 1.5rem;
+    width: 44px; height: 44px;
+    background: var(--surface);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .info-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+
+  .info-card p { font-size: 0.75rem; color: var(--muted); }
+
+  /* Loading */
+  #loading {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #loading p { color: var(--muted); font-size: 0.85rem; }
+
+  /* Results */
+  #results { display: none; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .results-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  .tag {
+    background: rgba(124,106,247,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.3);
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+  }
+
+  /* Candidate summary */
+  .candidate-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+  }
+
+  .stat-card .label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-card .value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .stat-card .sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  /* Charts row */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .chart-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Skills pills */
+  .skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .skill-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.8rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .skill-pill.trending {
+    background: rgba(78,205,196,0.1);
+    border-color: rgba(78,205,196,0.3);
+    color: var(--accent2);
+  }
+
+  /* Job cards */
+  .jobs-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .job-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+    animation: slideIn 0.4s ease both;
+  }
+
+  .job-card:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .job-rank {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--border);
+    text-align: center;
+  }
+
+  .job-card:nth-child(1) .job-rank { color: #ffd700; }
+  .job-card:nth-child(2) .job-rank { color: #c0c0c0; }
+  .job-card:nth-child(3) .job-rank { color: #cd7f32; }
+
+  .job-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+
+  .job-meta { font-size: 0.72rem; color: var(--muted); }
+
+  .score-bar-wrap { text-align: right; min-width: 100px; }
+
+  .score-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+
+  .score-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* Reset btn */
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  /* Error */
+  .error-box {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: var(--accent3);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">career<span>.</span>intel</div>
+    <div class="status-pill">
+      <span class="dot"></span>
+      model online — lightgbm lambdarank
+    </div>
+  </header>
+
+  <!-- Upload Section -->
+  <div id="uploadSection">
+    <div class="upload-section">
+
+      <!-- Drop Zone -->
+      <div class="upload-zone" id="dropZone">
+        <span class="upload-icon">📄</span>
+        <h2>Upload your CV</h2>
+        <p>PDF format · any size · instant analysis</p>
+        <button class="btn" onclick="document.getElementById('fileInput').click()">
+          Choose File
+        </button>
+        <input type="file" id="fileInput" accept=".pdf">
+        <p style="margin-top:1rem; font-size:0.72rem;" id="fileName"></p>
+      </div>
+
+      <!-- Info cards -->
+      <div class="info-cards">
+        <div class="info-card">
+          <div class="icon">🧠</div>
+          <div>
+            <h4>LightGBM LambdaRank</h4>
+            <p>Trained on 150,000 candidate-job pairs with NDCG@10 = 0.90</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="icon">🎯</div>
+          <div>
+            <h4>6-feature matching</h4>
+            <p>Semantic similarity · skill overlap · experience · market demand</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="icon">⚡</div>
+          <div>
+            <h4>Real-time inference</h4>
+            <p>300 jobs scored and ranked in under 1 second</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top: 1rem;">
+      <button class="btn" id="analyzeBtn" onclick="analyze()" disabled>
+        Analyze CV →
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Parsing resume · extracting skills · ranking 300 jobs...</p>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="results-header">
+      <h2>Your Top Matches</h2>
+      <button class="reset-btn" onclick="reset()">← Upload another</button>
+    </div>
+
+    <!-- Candidate stats -->
+    <div class="candidate-summary">
+      <div class="stat-card">
+        <div class="label">File</div>
+        <div class="value" id="statFile" style="font-size:1rem; padding-top:0.3rem">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Skills detected</div>
+        <div class="value" id="statSkills">0</div>
+        <div class="sub">from resume text</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Experience</div>
+        <div class="value" id="statYears">0</div>
+        <div class="sub">years detected</div>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <h3>Detected skills</h3>
+      <div class="skills-container" id="skillsContainer"></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <h3>Market demand for your skills</h3>
+        <canvas id="skillChart" height="200"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Top 10 relevance scores</h3>
+        <canvas id="scoreChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Job recommendations -->
+    <div class="chart-card">
+      <h3 style="margin-bottom:1.5rem">Top 10 job recommendations</h3>
+      <div class="jobs-grid" id="jobsGrid"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  let selectedFile = null;
+  let skillChartInst = null;
+  let scoreChartInst = null;
+
+  // File input
+  document.getElementById('fileInput').addEventListener('change', e => {
+    selectedFile = e.target.files[0];
+    if (selectedFile) {
+      document.getElementById('fileName').textContent = selectedFile.name;
+      document.getElementById('analyzeBtn').disabled = false;
+    }
+  });
+
+  // Drag and drop
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') {
+      selectedFile = file;
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('analyzeBtn').disabled = false;
+    }
+  });
+
+  async function analyze() {
+    if (!selectedFile) return;
+
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    const form = new FormData();
+    form.append('file', selectedFile);
+
+    try {
+      const res  = await fetch('/upload', { method: 'POST', body: form });
+      const data = await res.json();
+
+      if (data.error) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('uploadSection').style.display = 'block';
+        document.getElementById('uploadSection').insertAdjacentHTML(
+          'afterbegin',
+          `<div class="error-box">Error: ${data.error}</div>`
+        );
+        return;
+      }
+
+      renderResults(data);
+
+    } catch (e) {
+      document.getElementById('loading').style.display = 'none';
+      alert('Network error: ' + e.message);
+    }
+  }
+
+  function renderResults(data) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+
+    // Stats
+    document.getElementById('statFile').textContent   = data.filename || 'resume.pdf';
+    document.getElementById('statSkills').textContent = data.candidate_skills.length;
+    document.getElementById('statYears').textContent  = data.candidate_years;
+
+    // Skills pills
+    const sc = document.getElementById('skillsContainer');
+    sc.innerHTML = '';
+    if (data.candidate_skills.length === 0) {
+      sc.innerHTML = '<span style="color:var(--muted);font-size:0.8rem">No skills detected — try a text-based PDF</span>';
+    } else {
+      data.candidate_skills.forEach(s => {
+        const trending = data.skill_demand[s] >= 0.75;
+        sc.innerHTML += `<span class="skill-pill ${trending ? 'trending' : ''}">${s}</span>`;
+      });
+    }
+
+    // Skill demand chart
+    const skillLabels = Object.keys(data.skill_demand);
+    const skillValues = Object.values(data.skill_demand);
+    if (skillChartInst) skillChartInst.destroy();
+    if (skillLabels.length > 0) {
+      skillChartInst = new Chart(document.getElementById('skillChart'), {
+        type: 'bar',
+        data: {
+          labels: skillLabels,
+          datasets: [{
+            data: skillValues,
+            backgroundColor: skillValues.map(v =>
+              v >= 0.75 ? 'rgba(78,205,196,0.7)' : 'rgba(124,106,247,0.5)'
+            ),
+            borderColor: skillValues.map(v =>
+              v >= 0.75 ? '#4ecdc4' : '#7c6af7'
+            ),
+            borderWidth: 1,
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 1, ticks: { color: '#6b6b8a', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#2a2a3a' } },
+            x: { ticks: { color: '#6b6b8a', font: { family: 'DM Mono', size: 9 } }, grid: { display: false } }
+          }
+        }
+      });
+    } else {
+      document.getElementById('skillChart').parentElement.innerHTML +=
+        '<p style="color:var(--muted);font-size:0.8rem;margin-top:1rem">No skills detected to chart</p>';
+    }
+
+    // Score chart
+    const topJobs    = data.recommendations.slice(0, 10);
+    const scoreLabels = topJobs.map(j => j.job_title.length > 20 ? j.job_title.slice(0,18)+'…' : j.job_title);
+    const scoreVals   = topJobs.map(j => j.relevance_score);
+    const maxScore    = Math.max(...scoreVals);
+
+    if (scoreChartInst) scoreChartInst.destroy();
+    scoreChartInst = new Chart(document.getElementById('scoreChart'), {
+      type: 'bar',
+      data: {
+        labels: scoreLabels,
+        datasets: [{
+          data: scoreVals,
+          backgroundColor: scoreVals.map((v,i) => i === 0 ? 'rgba(255,215,0,0.6)' : 'rgba(124,106,247,0.5)'),
+          borderColor:     scoreVals.map((v,i) => i === 0 ? '#ffd700' : '#7c6af7'),
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6b6b8a', font: { family: 'DM Mono', size: 10 } }, grid: { color: '#2a2a3a' } },
+          y: { ticks: { color: '#6b6b8a', font: { family: 'DM Mono', size: 9 } }, grid: { display: false } }
+        }
+      }
+    });
+
+    // Job cards
+    const grid = document.getElementById('jobsGrid');
+    grid.innerHTML = '';
+    topJobs.forEach((job, i) => {
+      const pct = Math.round((job.relevance_score / maxScore) * 100);
+      grid.innerHTML += `
+        <div class="job-card" style="animation-delay:${i * 0.05}s">
+          <div class="job-rank">${job.rank}</div>
+          <div>
+            <div class="job-title">${job.job_title}</div>
+            <div class="job-meta">min ${job.min_years}yr exp · trend score ${job.trend_score}</div>
+          </div>
+          <div class="score-bar-wrap">
+            <div class="score-label">${job.relevance_score}</div>
+            <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>`;
+    });
+  }
+
+  function reset() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileName').textContent = '';
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('uploadSection').style.display = 'block';
+    document.querySelectorAll('.error-box').forEach(e => e.remove());
+  }
+</script>
+</body>
+</html>
